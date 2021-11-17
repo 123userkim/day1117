@@ -1,0 +1,407 @@
+<숫자와 관련하여 오라클이 미리 만들어둔 함수들>
+	1. abs 절대 값을 반환
+	->abs(숫자[숫자가 있는 컬럼|숫자가 있는 컬럼의 수식])
+	1)select abs(-78),abs(78)from dual;
+	
+	  ABS(-78)    ABS(78)
+	 ---------- ----------
+        78         78
+        
+    2)모든 주문에 대해서 도서의 가격-주문가격을 출력하기
+    select max(abs(price - saleprice))
+    from book b, orders o
+    where b.bookid = o.bookid;
+    
+    2.round(값,위치)
+    ->실수값 반올림 소수점 위치까지 출력
+    ->소수점위치 1이면, 첫 번째자리까지
+    select round(4.875,1) from dual;
+    
+    ROUND(4.875,1)
+	--------------
+           4.9
+   
+     select round(4.845,1) from dual;
+     
+	ROUND(4.845,1)
+	--------------
+	           4.8
+       
+     select round(4.845,0) from dual;    
+       
+     select round(6469,-1) from dual;    
+           
+     select round(6469,-2) from dual;                            
+             
+  	문제) 개발팀 특별보너스 : 실수령액 50%  대상자이름,부서명, 보너스금액 단십의 자리까지
+             select ename,dname,round((salary+comm)*0.5,-1)
+             from emp e, dept d
+             where e.dno = d.dno and
+             dname like '개발%';
+             
+             ENAME      DNAME      ROUND((SALARY+COMM)*0.5,-1)
+			---------- ---------- ---------------------------
+				김수연     개발1팀                            440
+				임하연     개발1팀                            230
+				유하림     개발1팀                            220
+				박지예     개발1팀                            280
+				윤서우     개발2팀                            280
+				윤석열     개발2팀
+				최현호     개발2팀                            390
+				정자영     개발2팀                            240
+				김지현     개발2팀                            290
+	 문제) 고객별로 평균 주문 금액을 백원단윌 반올림
+	 
+		 select name ,sum(saleprice)/count(*)평균주문금액
+		 from customer c, orders o
+		 where c.custid = o.custid
+		 group by name;
+	 
+		 NAME       평균주문금액
+		---------- ------------
+		박지성            22000
+		윤석열            32000
+		이재명            20000
+		김시아            17500
+		김연아       11666.6667
+		장미란            14200
+		추신수       17666.6667
+	 	 		             
+     3.ceil(실수값)
+     ->무조건 올림수
+     
+     4.floor(실수값)
+     ->무조건 버림수  
+     
+     select round(56.4791,0)from dual;
+	     ROUND(56.4791,0)
+		----------------
+	              56
+     select ceil(56.4791)from dual;
+	     CEIL(56.4791)
+		-------------
+	           57
+     select floor(56.4791)from dual;
+	     FLOOR(56.4791)
+		--------------
+	            56
+	            
+	 5. replace(문자열, 원래문자, 바꿀문자)
+	 ->문자열 데이터중에서 특정문자를 다른문자로 변경할 때 사용함
+	 
+	 문제)도서제목에 야구가 포함된 도서를 농구로 변경한 이후 도서목록을 출력하기	 
+	 select bookid, replace(bookname,'야구','농구')bookname, publisher,price
+	 from book;
+	
+	 문제) 도서제목에 야구가 포함된 도서의 이름을 농구로 변경하기
+	 update book100
+	 set
+	 bookname = replace(bookname,'야구','농구')
+	 where bookname like '%야구%'; 
+	 
+	 6.length(문자열데이터)
+	 ->문자열의 길이를 알려줌
+	 cf)바이트 수를 알고 싶다면 lengthB(문자열데이터): 문자열의 바이트 길이
+	 
+	 문제)select length('김')from dual;
+	 	 select length('a')from dual;
+	 	 select lengthB('김')from dual;
+	 	
+	 	 LENGTHB('김')
+		-------------
+            3
+	 	 select lengthB('a')from dual;
+	 	 
+	 	 
+	  문제)굿스포츠 출판사의 도서제목의 글자수, 바이트수
+	  select bookname, length(bookname),lengthB(bookname)
+	  from book
+	  where publisher ='굿스포츠';
+	  
+	   문제) 출판사명의 길이가 3글자 이하인 출판사에서 출간하는 도서명, 출판사명, 도서명길이, 가격
+	   select bookname,publisher,length(bookname),price
+	   from book
+	   where length(publisher)<=3;
+	   
+	   7.substr(문자열,시작위치,글자수) : 공백도 한 글자로 취급됨
+	   ->문자열 데이터에서 시작위치에서부터 글자 수만큼 잘라옴
+	   
+	   select substr('hello oracle',2,3)from dual;
+	   select substr('hello oracle',2,4)from dual;
+	   select substr('hello oracle',2,5)from dual;
+	 
+		문제) 모든 직원의 성만 출력하기
+		select substr(ename,1,1)성 from emp;
+		
+		문제)직원들의 성씨별로 인언수 출력하기
+		select substr(ename,1,1)성 , count(*)인원수
+		from emp
+		group by substr(ename,1,1)
+		order by count(*)desc;
+---------------------------------------------------
+문자열 함수의 실습을 위해 emp테이블에 다음의 두 개의 컬럼을 추가
+email
+jumin
+
+
+alter table emp add email varchar2(50);
+alter table emp add jumin varchar2(14);
+
+
+문제)개발팀에 근무하는 여성직원들에게 특별 상여금을 지급하려고 함
+	상여금은 연봉의 30%, 대상자의 사원번호, 사원명, 부서번호, 부서명 , 관리자명, 상여금
+	단 상여금이 높은 순으로 출력함.
+
+
+	select e.eno, e.ename, d.dno, dname, m.ename, (e.salary+e.comm)*12*0.3상여금
+	from emp e, emp m, dept d
+	where 
+	d.dno= e.dno and
+	e.mgr =m.eno and
+	dname like'%개발%' and
+	substr(e.jumin,8,1)='2'
+	order by (e.salary+e.comm)*12*0.3 desc;
+	
+	7.instr(문자열, 찾을 문자)
+	=>문자열 안에서 찾을 문자의 위치를 반환함
+	select instr('hello oracle','r')from dual;	
+
+	문제)모든 직원의 이름과 아이디를 출력하기
+	
+	 select ename, substr(email,1, instr(email,'@')-1)아이디 from emp;
+	 
+	문제) 모든 직원의 이름과, 나이를 출력함
+	select ename, to_char(sysdate,'yyyy') - (substr(jumin,1,2)+1900) from emp;
+
+	문제)개발팀에 근무하는 25세이상의 남자직월의 정보
+	사원번호, 이름, 부서명, 근무위치,연봉, 관리자명
+	select e.eno, e.ename,to_char(sysdate,'yyyy')-(substr(e.jumin,1,2)+1900)age,
+	dname,dloc,(e.salary+e.comm)*12,m.ename
+	from emp e, emp m, dept d
+	where d.dno= e.dno and
+	e.mgr =m.eno and
+	substr(e.jumin,8,1)='2' and
+	dname like '%개발%' and
+	to_char(sysdate,'yyyy') - (substr(e.jumin,1,2)+1900)>=25
+	order by m.ename, e.ename;
+	
+	문제)개발팀에 근무하는 25세 이상인 여성사원들의
+	급여와 수당을 수정-> 각각 현재 급여의 10% 인상하도록 수정
+	
+	 update emp
+	 set
+	 salary = salary*1.1, comm= comm *1.1
+	 where dno in(select dno from dept
+					where dname like '%개발%') and
+	 to_char(sysdate,'yyyy')-(substr(jumin,1,2)+1900)>=25 and
+	 substr(jumin,8,1)='2'; 
+	
+	
+	문제)개발팀에 근무하는 25세 이상인 여성사원들의
+	급여와 수당을 수정-> 자신이 근무하는부서의 평균급여와 수당으로 수정
+	 update emp e1 set
+	 salary = (select avg(salary) from emp e2 where e1.dno = e2.dno), 
+	 comm= (select avg(comm) from emp e2 where e1.dno = e2.dno)
+	 where dno in(select dno from dept
+					where dname like '%개발%') and
+	 to_char(sysdate,'yyyy')-(substr(jumin,1,2)+1900)>=25 and
+	 substr(jumin,8,1)='2'; 
+	 
+	 
+	 
+	select e.ename, e.salary, e.comm 
+	from emp e, emp m, dept d
+	where d.dno= e.dno and
+	e.mgr =m.eno and
+	substr(e.jumin,8,1)='2' and
+	dname like '%개발%' and
+	to_char(sysdate,'yyyy') - (substr(e.jumin,1,2)+1900)>=25
+	order by m.ename, e.ename;
+	
+	
+	문제)개발팀에 근무하는 25세 이상인 여성사원들의
+	급여와 수당을 수정-> 부서별 평균급여의 최대값, 부서별 평균수당의 최대값으로 수정
+	
+	update emp e1 set
+	 salary = (select max(avg(salary)) from emp group by dno), 
+	 comm= (select max(avg(comm)) from emp group by dno)
+	 where dno in(select dno from dept
+					where dname like '%개발%') and
+	 to_char(sysdate,'yyyy')-(substr(jumin,1,2)+1900)>=25 and
+	 substr(jumin,8,1)='2'; 
+	 
+	 
+	8. lower(문자열)->소문자변환
+	 upper(문자열)->대문자변환
+	 
+	 insert into customer values(11,'Tiger','대한민국 인천','010-1234-1234');
+	 insert into customer values(9,'tiger','대한민국 부산','010-2222-2222');
+	 insert into customer values(10,'TIGER','대한민국 전주','010-3333-3333');
+	
+	 select * from customer
+	 where lower(name) ='tiger';
+	
+	9. ltrim(문자열)=>문자열 데이터의 왼쪽에 있는 공백을 제거함
+		rtrim(문자열)=>문자열 데이터의 오른쪽에 있는 공백을 제거함
+		trim(문자열)=>문자열 데이터의 왼쪽과 오른쪽에 있는 공백을 제거함
+	
+	select '*' ||'   hello   '||'*' from dual;
+	
+	'*'||'HELLO'||'*'
+	------------------
+	*   hello   *
+	
+	select '*' || ltrim('   hello   ')||'*' from dual;
+	select '*' || rtrim('   hello   ')||'*' from dual;
+	
+	
+	
+	insert into customer values(12,' tiger','대한민국 강원도','010-3333-3333');
+	insert into customer values(13,'TIGER ','대한민국 서울','010-3343-3333');
+	insert into customer values(14,' Tiger ','대한민국 대구','010-3343-3353');
+	
+	
+	select * from customer
+	 where trim(lower(name)) ='tiger';
+	 
+	 delete from customer where custid ='1234';
+	 
+	10. lpad(컬럼, 자릿수,문자) , rpad
+	->컬럼의 값을 자릿수만큼 잡아서 오른쪽 맞추어 출력하되 왼쪽 빈칸은 문자로 채우기
+	
+	select lpad('hello',10,'@')from dual;
+	
+	LPAD('HELLO',10,'@')
+	--------------------
+	@@@@@hello
+	
+	select rpad('hello',10,'*')from dual;
+	
+	RPAD('HELLO',10,'*')
+	--------------------
+	hello*****
+	
+	문제)윤태인의 부하직원들의 사원번호, 사원명, 입사일, 연봉, 주민번호, 아이디를 출력하기
+		단, 주민번호는 생년만 출력하고, 14자리로 출력하되 8번째 자리까지만 출력하고 
+		나머지는 *로 채워서 출력하기
+	select e.eno, e.ename, e.hirdate, (e.salary+e.comm)*12 연봉,
+	rpad(substr(e.jumin,1,8),14,'*') 주민,substr(e.email,1, instr(e.email,'@')-1)아이디
+	from  emp e, emp m
+	where m.ename = '김시아' and
+	e.mgr = m.eno;
+	
+	select length('hello')from dual;
+ 	
+ 	문제)아이디의 길이가 8자 미만인 직원들의 
+ 	사원번호, 사원명, 관리자명, 부서번호, 부서명, 아이디를 출력함
+ 	select  e.eno, e.ename, m.ename, e.dno, dname, substr(e.email,1, instr(e.email,'@')-1)아이디
+ 	from emp e, emp m, dept d
+ 	where length(substr(e.email,1, instr(e.email,'@')-1))<8 and
+ 	e.mgr = m.eno and
+ 	d.dno= e.dno;
+ 	--------------
+ 	12. 날짜 관련 함수들 
+ 	to_date(문자열, 형식지정문자)
+ 		문자열을 Date으로 반환하는 함수
+ 	to_char(날짜, 형식지정문자)
+ 		날짜를 문자열로 반환해주는 함수
+ 		
+ 	select sysdate from dual;
+ 	
+ 	select to_char(sysdate,'yyyy')from dual;
+ 	select to_char(sysdate,'yyyy/mm')from dual;
+ 	select to_char(sysdate,'mm')from dual;
+ 	select to_char(sysdate,'yyyy/mm/dd hh24:mi:ss')from dual;
+ 	
+ 	문제)개발팀에 근무하는 직원중 2000년 이전에 입사한 직원은 재교육 대상자
+ 	대상자들의 이름, 입사일, 관리자명을 출력
+ 	
+ 	select e.ename, e.hirdate, m.ename
+ 	from emp e, emp m, dept d
+ 	where e.mgr = m.eno and
+ 	d.dno= e.dno and
+ 	dname like '%개발%' and
+ 	to_char(e.hirdate,'yyyy') <= 2020;
+ 	
+ 	
+ 	문제) 근속 연수가 3년 이상인 모든 직원들에게 상여금부여
+ 	상여금: 연봉의 20%
+ 	대상자의 사원번호, 이름 , 상여금, 부서명
+ 	단 상여금은 반올림해 100단위까지만 
+ 	
+ 	select eno, ename, round(((e.salary+e.comm)*12)*0.2,-2), dname
+ 	from emp e, dept d
+ 	where e.dno = d.dno and
+ 	to_char(sysdate,'yyyy')-to_char(e.hirdate,'yyyy')>=3;
+ 	
+ 	13. months_between(날짜1, 날짜2)
+ 	=> 두 날짜 사이의 개월수를 반환하는 함수
+ 	->날짜1은 최근의 날짜이어야함: 더 큰 수 
+ 	
+ 	문제) 1995.07/29 
+ 	select months_between(sysdate,'1999/01/20')from dual;
+ 	
+ 	문제)모든 직원들의 사원번호, 이름, 입사일, 근무개월 수를 출력하기
+	단, 근무개월 수가 높은 순으로 출력
+	
+	select eno, ename, hirdate, months_between(sysdate, hirdate)
+	from emp
+	order by months_between(sysdate, hirdate) desc;
+	
+	문제) 판교나 서교동에 근무하는 직원들 중에서 근무 개월 수가 24개월 이상인 직원들의
+	사원번호, 사원명, 입사일, 부서번호, 부서명 근무개월 수를 출력함 
+	단, 근무개월수가 높은 순으로
+	소수점 이하는 버림수를 취함
+	
+	select eno, ename, hirdate, e.dno, dname,floor(months_between(sysdate, hirdate))근무개월수
+	from dept d, emp e
+	where d.dno = e.dno and
+	dloc in('판교','서교동') and
+	floor(months_between(sysdate, hirdate))>=24
+	order by floor(months_between(sysdate, hirdate))desc;
+	
+	----------------데이터 수정-------------------
+	날짜 사이의 연산이 가능함
+	select sysdate-1, sysdate, sysdate+1 from dual;
+	
+	select to_date('1995/07/29','yyyy/mm/dd')+100 from dual;
+	
+	1번 고객의 구매일을 모두 작년 날짜로 바꾸기
+	update orders set orderdate = orderdate-365
+	where custid =(select custid from customer where name ='박지성') ;
+	
+	추신수 고객의 구매일을 모두 2년전으로 바꾸기
+	update orders set orderdate = orderdate-(365*2)
+	where custid =(select custid from customer where name ='추신수') ;
+	
+	문제) 최근 6개월간 구매이력이 없는 고객한테, 이벤트 문자를 발송
+		대상자의 이름과, 전화번호, 가장 최근의 구매일, 구매하지 않는 개월 수 
+		단 구매하지 않은 개월 수는 소수점이하 절삭하여 표현함
+	select distinct name, phone, 
+	(select max(orderdate)
+		from orders o2
+			where o1.custid = o2.custid),
+	floor(months_between(sysdate,(select max(orderdate)
+	from orders o2
+	where o1.custid = o2.custid)))
+	from customer c , orders o1
+	where c.custid = o1.custid and
+	floor(months_between(sysdate,(select max(orderdate)
+	from orders o2
+	where o1.custid = o2.custid)))>=6;
+	
+	관리자의 이름, 근무개월수를 입려받아서
+	
+	입력받은 관리자의 부하직원들 중에 근무개월 수가 관리자보다 큰
+	직원들의 사원번호, 사원명, 입사일, 연봉, 주민번호,아이디를 출력 
+	8번째자리까지만 출력	
+	
+	 
+	select e.eno, e.ename, e.hirdate, (e.salary+e.comm)*12 연봉,
+	rpad(substr(e.jumin,1,8),14,'*') 주민,substr(e.email,1, instr(e.email,'@')-1)아이디
+	from  emp e, emp m
+	where m.ename = '김시아' and
+	e.mgr = m.eno and
+	? < months_between(sysdate, e.hirdate);
+	
+	
